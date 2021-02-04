@@ -20,6 +20,8 @@ import org.springframework.data.repository.query.QueryMethodEvaluationContextPro
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
+import com.microsoft.spring.data.gremlin.query.query.GraphRepositoryGremlinQuery;
+import com.microsoft.spring.data.gremlin.common.GremlinFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -55,14 +57,16 @@ public class GremlinRepositoryFactory extends RepositoryFactorySupport {
     @Override
     protected Optional<QueryLookupStrategy> getQueryLookupStrategy(
             QueryLookupStrategy.Key key, QueryMethodEvaluationContextProvider provider) {
-        return Optional.of(new GremlinQueryLookupStrategy(this.operations));
+        return Optional.of(new GremlinQueryLookupStrategy(this.context, this.operations));
     }
 
     private static class GremlinQueryLookupStrategy implements QueryLookupStrategy {
 
         private final GremlinOperations operations;
+        private final ApplicationContext context;
 
-        public GremlinQueryLookupStrategy(@NonNull GremlinOperations operations) {
+        public GremlinQueryLookupStrategy(@NonNull ApplicationContext context,@NonNull GremlinOperations operations) {
+            this.context = context;
             this.operations = operations;
         }
 
@@ -73,6 +77,11 @@ public class GremlinRepositoryFactory extends RepositoryFactorySupport {
 
             Assert.notNull(queryMethod, "queryMethod should not be null");
             Assert.notNull(this.operations, "operations should not be null");
+            if (queryMethod.hasAnnotatedQuery()) {
+                final GremlinFactory gremlinFactory = context.getBean(GremlinFactory.class);
+                Assert.notNull(gremlinFactory, "gremlinFactory bean should not be null");
+                return new GraphRepositoryGremlinQuery(gremlinFactory.getGremlinClient(), queryMethod, operations);
+            }
 
             return new PartTreeGremlinQuery(queryMethod, this.operations);
         }

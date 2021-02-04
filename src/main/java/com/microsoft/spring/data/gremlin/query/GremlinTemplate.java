@@ -141,7 +141,7 @@ public class GremlinTemplate implements GremlinOperations, ApplicationContextAwa
         }
 
         // The current implementation doesn't support creating graphs that contain both edges
-        // and vertices that have null (generated) ids. In this case, vertex and edge creation 
+        // and vertices that have null (generated) ids. In this case, vertex and edge creation
         // need to be performed in two consecutive steps.
         // TODO(SOON) Add this verification in the GremlinSourceGraphWriter
 
@@ -348,7 +348,7 @@ public class GremlinTemplate implements GremlinOperations, ApplicationContextAwa
         return domain;
     }
 
-    private <T> List<T> recoverDomainList(@NonNull GremlinSource<T> source, @NonNull List<Result> results) {
+    public <T> List<T> recoverDomainList(@NonNull GremlinSource<T> source, @NonNull List<Result> results) {
         return results.stream().map(r -> recoverDomain(source, Collections.singletonList(r))).collect(toList());
     }
 
